@@ -819,10 +819,22 @@
     });
 
     rankedHabits.sort((a, b) => b.pct - a.pct || b.actual - a.actual);
-    const top10 = rankedHabits.slice(0, 10);
+    
+    // Exact match: tepada nechta odat bo'lsa, pastda ham xuddi shuncha ko'rsatiladi!
+    const allRanked = rankedHabits;
+
+    // Dynamically update card title & badge count
+    const titleEl = document.getElementById('txtTop10Title');
+    const badgeEl = document.getElementById('topHabitsBadge');
+    if (titleEl) {
+      titleEl.textContent = currentLang === 'uz' ? `ODATLAR REYTINGI (${allRanked.length})` : `HABITS RANKING (${allRanked.length})`;
+    }
+    if (badgeEl) {
+      badgeEl.textContent = currentLang === 'uz' ? `${allRanked.length} Ta Odat` : `${allRanked.length} Habits`;
+    }
 
     let html = '';
-    top10.forEach((item, index) => {
+    allRanked.forEach((item, index) => {
       const rank = index + 1;
       const rankClass = rank <= 3 ? `rank-${rank}` : '';
 
@@ -839,7 +851,7 @@
         </div>`;
     });
 
-    if (top10.length === 0) {
+    if (allRanked.length === 0) {
       html = `<div style="padding:12px; text-align:center; color:#94a3b8; font-size:0.8rem;">Hech qanday odat mavjud emas</div>`;
     }
 
@@ -1430,10 +1442,67 @@
     jumpToDay: jumpToDay
   };
 
+
+  // --- AUTOMATION ENGINE (AVTOMATIK TIZIM) ---
+  let lastCheckedDateDay = new Date().getDate();
+
+  function initAutomationWorker() {
+    // 1. Live Clock & Auto-Rollover at midnight
+    setInterval(() => {
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const clockEl = document.getElementById('liveClockDisplay');
+      if (clockEl) clockEl.textContent = `${hh}:${mm}`;
+
+      // Har kecha soat 00:00 da avtomatik yangi kunga o'tish
+      const currentDay = d.getDate();
+      if (currentDay !== lastCheckedDateDay) {
+        lastCheckedDateDay = currentDay;
+        console.log('Automated rollover: Yangi kun boshlandi:', currentDay);
+        jumpToToday();
+        showToast('Yangi kun boshlandi! Omadli kun tilaymiz! 🌅');
+      }
+    }, 1000);
+
+    // 2. Auto-reminders check every minute (09:00 and 21:00)
+    setInterval(() => {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const timeStr = `${hh}:${mm}`;
+
+      if (timeStr === '09:00') {
+        new Notification('🌅 Xayrli tong! (Odatlar Nazorati)', {
+          body: 'Bugungi rejalashtirilgan odatlaringizni bajarishga tayyormisiz?',
+          icon: 'favicon.ico'
+        });
+      } else if (timeStr === '21:00') {
+        const habits = getCurrentHabits();
+        const done = habits.filter(h => h.checks && h.checks[d.getDate()]).length;
+        new Notification('🌙 Xayrli oqshom! (Odatlar Nazorati)', {
+          body: `Bugun ${done}/${habits.length} ta odat bajarildi. Kunni to'liq yakunlashni unutmang!`,
+          icon: 'favicon.ico'
+        });
+      }
+    }, 60000);
+
+    // 3. Auto-focus on today's column smoothly after load
+    setTimeout(() => {
+      const today = new Date().getDate();
+      const todayHeader = document.querySelector(`.th-day-num.is-today`);
+      if (todayHeader) {
+        todayHeader.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }, 400);
+  }
+
   // Run on DOM load
   document.addEventListener('DOMContentLoaded', () => {
     loadData();
     initListeners();
+    initAutomationWorker();
     renderAll();
   });
 
