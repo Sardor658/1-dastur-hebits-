@@ -1010,6 +1010,12 @@
     selectedMonth = d.getMonth();
     ensureMonthData(selectedYear, selectedMonth);
     renderAll();
+    setTimeout(() => {
+      const todayHeader = document.querySelector('.th-day-num.is-today');
+      if (todayHeader) {
+        todayHeader.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }, 120);
   }
 
   function jumpToDay(day) {
