@@ -578,7 +578,19 @@
         const cellClass = isToday ? 'is-today' : (isPast ? 'is-past' : (isFuture ? 'is-future' : ''));
         const checkedClass = isChecked ? 'is-checked' : '';
         const hasNote = Boolean(habit.notes && habit.notes[day]);
-        const lockTitle = isPast ? '🔒 Qulflangan (2 marta tez bosing)' : (isToday ? '⭐ Bugun (26-oktyabr)' : '');
+        let lockTitle = '';
+        if (isPast) {
+          lockTitle = isChecked 
+            ? `🔒 ${day}-kun bajarilgan & xavfsiz saqlangan (O'zgartirish uchun 2 marta bosing)`
+            : `🔒 ${day}-kun qulflangan (Belgilash uchun 2 marta bosing)`;
+        } else if (isToday) {
+          lockTitle = `⭐ Bugun (${currentDayNum}-oktyabr)`;
+        } else if (isFuture) {
+          lockTitle = `⏳ ${day}-kun (Kelgusi kun)`;
+        }
+        if (hasNote) {
+          lockTitle = `📝 ${escapeHtml(noteText)} | ${lockTitle}`;
+        }
 
         rowHtml += `
           <td class="td-check-cell ${cellClass}">
