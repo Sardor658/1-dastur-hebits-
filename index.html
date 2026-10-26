@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">ODATLAR NAZORATI PRO - Habit Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Fullscreen Canvas for Confetti Fireworks -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- APP HEADER -->
+  <header class="app-header">
+    <div class="brand-area">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title"><span id="txtBrandTitle">ODATLAR NAZORATI</span> <span class="pro-badge">PRO v3.5</span></h1>
+        <p class="brand-subtitle" id="headerSubtitle">Oylik odatlar va maqsadlar nazorat paneli</p>
+      </div>
+    </div>
+
+    <!-- Month & Year Navigation -->
+    <div class="month-year-picker">
+      <button class="picker-nav-btn" id="prevMonthBtn" title="Oldingi oy">&#9664;</button>
+      <div class="picker-label">
+        <span id="currentMonthName">Oktyabr</span>
+        <span id="currentYearLabel">2026</span>
+      </div>
+      <button class="picker-nav-btn" id="nextMonthBtn" title="Keyingi oy">&#9654;</button>
+      <button class="btn-subtle" id="todayJumpBtn" title="Bugungi kunga o'tish">Bugun</button>
+    </div>
+
+    <!-- Gamification & XP Bar in Header -->
+    <div class="header-level-box" id="badgesTriggerBtn" title="Yutuqlaringizni ko'rish">
+      <div class="level-badge" id="userLevelBadge">👑 1-Daraja</div>
+      <div class="level-info">
+        <div class="level-xp-text"><span id="userXp">0</span> XP</div>
+        <div class="level-progress-bar">
+          <div class="level-progress-fill" id="levelProgressFill" style="width: 0%;"></div>
+        </div>
+      </div>
+      <button class="btn-trophy" title="Yutuqlar va medallar">🏆</button>
+    </div>
+
+    <!-- Header Actions Toolbar -->
+    <div class="header-actions">
+      <button class="btn btn-primary" id="addHabitBtn">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span id="txtAddHabit">Yangi Odat</span>
+      </button>
+
+      <button class="btn btn-outline" id="demoDataBtn" title="Namunaviy ko'rsatkichlarni yuklash">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <span id="txtDemo">Demo</span>
+      </button>
+
+      <div class="dropdown">
+        <button class="btn btn-outline" id="exportMenuBtn">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          <span id="txtExport">Eksport</span>
+        </button>
+        <div class="dropdown-menu" id="exportDropdown">
+          <a href="#" id="exportCsvBtn">📊 Excel (CSV) ga yuklash</a>
+          <a href="#" id="exportJsonBtn">💾 JSON Zaxira (Backup)</a>
+          <a href="#" id="importJsonTrigger">📥 JSON Fayldan tiklash</a>
+          <input type="file" id="jsonFileInput" accept=".json" style="display:none;">
+          <hr>
+          <a href="#" id="openAutoModalFromMenu">⚡ Avtomatik Eslatma & Zaxiralar</a>
+          <hr>
+          <a href="#" id="clearChecksBtn" class="text-danger">🧹 Barcha belgilarni tozalash</a>
+        </div>
+      </div>
+
+      <!-- Automation & Auto-Reminders Button -->
+      <button class="btn btn-icon" id="autoSettingsBtn" title="Avtomatika & Eslatmalar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+      </button>
+
+      <button class="btn btn-icon" id="printBtn" title="PDF / Chop etish">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+        </svg>
+      </button>
+
+      <button class="btn btn-icon" id="soundToggleBtn" title="Ovoz effekti">
+        <svg id="soundIconOn" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+        </svg>
+        <svg id="soundIconOff" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M17 14l4-4m0 4l-4-4"/>
+        </svg>
+      </button>
+
+      <button class="btn btn-icon" id="shortcutsBtn" title="Tezkor klavishlar (?)">
+        <span style="font-weight:800; font-size:0.85rem;">?</span>
+      </button>
+
+      <button class="btn btn-icon lang-switch-btn" id="langSwitchBtn" title="Tilni almashtirish">
+        <span id="currentLangText">O'ZB</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- TODAY FOCUS & MOTIVATION BANNER -->
+  <section class="today-focus-bar">
+    <div class="today-focus-left">
+      <div class="today-calendar-badge">
+        <span class="cal-day-name" id="todayDayNameLabel">Dushanba</span>
+        <span class="cal-day-num" id="todayDayNumLabel">26</span>
+      </div>
+      <div class="today-progress-info">
+        <div class="today-status-title" id="todayStatusHeading">Bugungi Natija: <span id="todayCountDone">0</span> / <span id="todayTotalCount">12</span> bajarildi (<span id="todayPctDone">0%</span>)</div>
+        <div class="today-mini-progress">
+          <div class="today-mini-fill" id="todayMiniProgressFill" style="width: 0%;"></div>
+        </div>
+      </div>
+      <button class="btn-check-all-today" id="checkAllTodayBtn">
+        <span id="txtCheckAllToday">⚡ Bugungi barcha odatlarni belgilash</span>
+      </button>
+      <button class="btn-check-all-today btn-yesterday-catchup" id="catchupYesterdayBtn" title="Kechagi kungi qolib ketgan odatlarni bir zumda to'ldirish">
+        <span id="txtCatchupYesterday">↩ Kechagi kun</span>
+      </button>
+    </div>
+
+    <!-- Motivational Quote & Live Auto-Clock -->
+    <div class="today-quote-box">
+      <div class="auto-sync-status" id="autoSyncStatusPill" title="Avtomatik sana sinxronizatsiyasi faol">
+        <span class="pulse-green-dot"></span>
+        <span id="liveClockDisplay">22:00</span>
+      </div>
+      <div>
+        <span class="quote-icon">“</span>
+        <span class="quote-text" id="dailyQuoteText">Kichik kundalik odatlar buyuk natijalarga olib keladi.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTER & SEARCH BAR -->
+  <section class="filter-search-bar">
+    <div class="category-tabs" id="categoryTabsContainer">
+      <!-- Injected dynamically in selected language -->
+    </div>
+    <div class="search-box-wrapper">
+      <input type="text" id="habitSearchInput" placeholder="🔍 Odat nomini qidirish...">
+    </div>
+  </section>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="dashboard-container">
+
+    <!-- TOP SECTION: CHARTS & OVERALL METRICS -->
+    <section class="top-analytics-grid">
+
+      <!-- 1. Daily Progress Bar Chart (31 days) -->
+      <div class="analytics-card daily-progress-card">
+        <div class="card-dark-header">
+          <span id="txtDailyProgress">Kunlik Progress</span>
+          <span class="card-header-meta" id="dailyChartMeta">31 kun</span>
+        </div>
+        <div class="card-body">
+          <div class="daily-bars-container" id="dailyBarsContainer">
+            <!-- Rendered dynamically by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Weekly Progress Chart (Week 1 - Week 5) -->
+      <div class="analytics-card weekly-progress-card">
+        <div class="card-dark-header">
+          <span id="txtWeeklyProgress">Haftalik Progress</span>
+          <span class="card-header-meta" id="weeklyChartMeta">5 hafta</span>
+        </div>
+        <div class="card-body">
+          <div class="weekly-bars-container" id="weeklyBarsContainer">
+            <!-- Rendered dynamically by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. KPI Metrics & Donut Chart -->
+      <div class="analytics-card metrics-donut-card">
+        <div class="metrics-donut-split">
+          
+          <!-- KPI 3 Stacked Cards -->
+          <div class="kpi-stack">
+            <div class="kpi-box">
+              <div class="kpi-label" id="txtGoalLabel">Maqsad</div>
+              <div class="kpi-value" id="kpiGoal">372</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label" id="txtCompletedLabel">Bajarildi</div>
+              <div class="kpi-value" id="kpiCompleted">0</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label" id="txtLeftLabel">Qoldi</div>
+              <div class="kpi-value" id="kpiLeft">372</div>
+            </div>
+          </div>
+
+          <!-- Donut Chart -->
+          <div class="donut-section">
+            <div class="donut-wrapper">
+              <svg viewBox="0 0 160 160" class="donut-svg">
+                <!-- Background track (Left/Remaining) -->
+                <circle cx="80" cy="80" r="60" class="donut-track" />
+                <!-- Foreground track (Completed) -->
+                <circle cx="80" cy="80" r="60" class="donut-fill" id="donutCircleFill" />
+              </svg>
+              <!-- Percentage Callout: Remaining segment -->
+              <div class="donut-callout donut-left-callout">
+                <span class="donut-callout-pct" id="donutLeftPct">100%</span>
+              </div>
+              <!-- Percentage Callout: Completed segment -->
+              <div class="donut-callout donut-completed-callout">
+                <span class="donut-callout-pct" id="donutCompletedPct">0.0%</span>
+              </div>
+              <!-- Center completion text -->
+              <div class="donut-center-info">
+                <span class="donut-center-pct" id="donutCenterPct">0%</span>
+                <span class="donut-center-label" id="txtBajarildi">Bajarildi</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- MIDDLE SECTION: MAIN HABITS TRACKER MATRIX & ANALYSIS -->
+    <section class="matrix-section">
+      <div class="table-responsive-wrapper">
+        <table class="habits-matrix-table" id="habitsTable">
+          <thead id="matrixTableHead">
+            <!-- Injected via JS -->
+          </thead>
+          <tbody id="matrixTableBody">
+            <!-- Habit Rows rendered by JS -->
+          </tbody>
+          <tfoot id="matrixTableFoot">
+            <!-- Summary Total & % rows rendered by JS -->
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <!-- BOTTOM SECTION: MONTH TABS & TOP 10 HABITS -->
+    <section class="bottom-analytics-grid">
+
+      <!-- Bottom Left: Excel-style Month Tabs -->
+      <div class="month-tabs-card">
+        <div class="month-tabs-header">
+          <span class="month-tabs-title" id="txtMonthNavigation">OYLAR NAVIGATSIYASI</span>
+          <span class="month-tabs-hint" id="txtMonthHint">Har bir oyni alohida kuzatish uchun bosing</span>
+        </div>
+        <div class="month-tabs-strip" id="monthTabsStrip">
+          <!-- 12 month tabs generated by JS -->
+        </div>
+      </div>
+
+      <!-- Bottom Right: TOP 10 HABITS Ranking Card -->
+      <div class="top-habits-card">
+        <div class="card-dark-header">
+          <span id="txtTop10Title">ENG YAXSHI 10 TA ODAT</span>
+          <span class="card-header-badge" id="topHabitsBadge">10 ta odat</span>
+        </div>
+        <div class="top-habits-body" id="topHabitsList">
+          <!-- Top 10 list rendered by JS -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ADD / EDIT HABIT MODAL -->
+  <div class="modal-backdrop" id="habitModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalTitle">Yangi Odat Qo'shish</h3>
+        <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+      </div>
+      <form id="habitForm">
+        <input type="hidden" id="habitEditId" value="">
+        
+        <div class="form-group">
+          <label for="habitNameInput" id="lblHabitName">Odat Nomi</label>
+          <input type="text" id="habitNameInput" required placeholder="Masalan: Kitob o'qish / 30 daqiqa" maxlength="50">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="habitGoalInput" id="lblHabitGoal">Oylik Maqsad (kun)</label>
+            <input type="number" id="habitGoalInput" min="1" max="31" value="31" required>
+          </div>
+          <div class="form-group">
+            <label for="habitCategorySelect" id="lblHabitCategory">Kategoriya / Icon</label>
+            <select id="habitCategorySelect">
+              <option value="📚">📚 Ta'lim / Kitob</option>
+              <option value="💪">💪 Sport / Mashq</option>
+              <option value="💻">💻 Ish / Dasturlash</option>
+              <option value="💧">💧 Salomatlik / Suv</option>
+              <option value="⏰">⏰ Reja / Vaqt</option>
+              <option value="🧘">🧘 Meditatsiya / Ruh</option>
+              <option value="🥗">🥗 To'g'ri Ovqatlanish</option>
+              <option value="🎯">🎯 Maqsad / Odob</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="modalCancelBtn">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary" id="modalSaveBtn">Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- AUTOMATION & AUTO-REMINDERS MODAL -->
+  <div class="modal-backdrop" id="autoModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 id="autoModalHeading">⚡ Avtomatlashtirish & Smart Tizim</h3>
+        <button class="modal-close-btn" id="autoModalCloseBtn">&times;</button>
+      </div>
+      <div class="auto-modal-body">
+        
+        <!-- 1. Auto Push Reminders -->
+        <div class="auto-section-card">
+          <div class="auto-card-header">
+            <div>
+              <span class="auto-card-title" id="txtAutoPushTitle">🔔 Avtomatik Brauzer Eslatmalari (Push Notifications)</span>
+              <p class="auto-card-desc" id="txtAutoPushDesc">Belgilangan vaqtda brauzer fonda bo'lsa ham eslatma yuboradi.</p>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" id="autoNotificationToggle">
+              <span class="slider round"></span>
+            </label>
+          </div>
+          <div class="auto-card-content" id="autoReminderTimesBox">
+            <div class="form-row">
+              <div class="form-group">
+                <label id="lblMorningTime">Ertalabki eslatma vaqti:</label>
+                <input type="time" id="morningReminderTime" value="09:00">
+              </div>
+              <div class="form-group">
+                <label id="lblEveningTime">Kechki tekshiruv vaqti:</label>
+                <input type="time" id="eveningReminderTime" value="21:00">
+              </div>
+            </div>
+            <button class="btn btn-outline" id="testNotificationBtn" style="font-size:0.75rem; padding:5px 10px;">
+              <span id="txtTestNotification">🔔 Hozir sinab ko'rish (Test Notification)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Streak Shield / Freeze -->
+        <div class="auto-section-card">
+          <div class="auto-card-header">
+            <div>
+              <span class="auto-card-title" id="txtShieldTitle">🛡️ Streak Himoyasi (Streak Freeze)</span>
+              <p class="auto-card-desc" id="txtShieldDesc">Agar bir kun kutilmaganda odat qolib ketsa, streak nollanmaydi.</p>
+            </div>
+            <span class="badge-shield-active" id="streakShieldStatus">🛡️ 1 ta himoya faol</span>
+          </div>
+        </div>
+
+        <!-- 3. Smart Trajectory Forecast -->
+        <div class="auto-section-card">
+          <div class="auto-card-header">
+            <div>
+              <span class="auto-card-title" id="txtForecastTitle">📈 Aqlli Prognoz & Tahlil (AI Forecast)</span>
+              <p class="auto-card-desc" id="txtForecastDesc">Joriy sur'atingiz asosida oylik natija bashorati.</p>
+            </div>
+          </div>
+          <div class="auto-stats-grid">
+            <div class="auto-stat-item">
+              <span class="auto-stat-num" id="forecastMonthEndPct">--%</span>
+              <span class="auto-stat-label" id="lblStatMonthEnd">Oy oxiri kutilmasi</span>
+            </div>
+            <div class="auto-stat-item">
+              <span class="auto-stat-num" id="forecastBestDayName">--</span>
+              <span class="auto-stat-label" id="lblStatBestDay">Eng intizomli kuningiz</span>
+            </div>
+            <div class="auto-stat-item">
+              <span class="auto-stat-num" id="forecastGrade">A+</span>
+              <span class="auto-stat-label" id="lblStatGrade">Intizom bahosi</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Automated Daily Backups -->
+        <div class="auto-section-card">
+          <div class="auto-card-header">
+            <div>
+              <span class="auto-card-title" id="txtBackupTitle">💾 Avtomatik Zaxira Tarixi (Auto-Snapshots)</span>
+              <p class="auto-card-desc" id="txtBackupDesc">Har bir o'zgarish xotirada avtomatik saqlanib boriladi.</p>
+            </div>
+            <button class="btn btn-outline" id="restoreSnapshotBtn" style="font-size:0.75rem; padding:5px 10px;">
+              <span id="txtRestoreSnapshot">↺ Oxirgi zaxirani tiklash</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENTS & BADGES MODAL -->
+  <div class="modal-backdrop" id="badgesModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 id="badgesModalHeading">🏆 Yutuqlar va Medallar (Achievements)</h3>
+        <button class="modal-close-btn" id="badgesCloseBtn">&times;</button>
+      </div>
+      <div class="badges-modal-body">
+        <div class="user-level-summary">
+          <div class="summary-avatar">👑</div>
+          <div>
+            <h4 id="modalLevelTitle">1-Daraja: Boshlovchi</h4>
+            <p id="modalXpSubtitle">Jami XP: 0 | Keyingi darajaga: 100 XP qoldi</p>
+          </div>
+        </div>
+        <div class="badges-grid" id="badgesGridList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEYBOARD SHORTCUTS GUIDE MODAL -->
+  <div class="modal-backdrop" id="shortcutsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="shortcutsModalHeading">⌨️ Tezkor Klaviatura Tugmalari</h3>
+        <button class="modal-close-btn" id="shortcutsCloseBtn">&times;</button>
+      </div>
+      <div class="shortcuts-list" id="shortcutsListContainer">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CELL NOTE / JOURNAL MODAL -->
+  <div class="modal-backdrop" id="noteModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="noteModalTitle">📝 Kunga izoh qo'shish</h3>
+        <button class="modal-close-btn" id="noteCloseBtn">&times;</button>
+      </div>
+      <div class="form-group">
+        <label id="noteModalSubtitle">Odat va kun haqida qisqa eslatma:</label>
+        <textarea id="cellNoteInput" rows="3" placeholder="Masalan: 40 bet o'qidim, ajoyib fikrlar oldim..." maxlength="200"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="noteDeleteBtn">O'chirish</button>
+        <button type="button" class="btn btn-primary" id="noteSaveBtn">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
